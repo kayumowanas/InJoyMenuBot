@@ -1,73 +1,68 @@
-# InJoy Menu Bot
+# InJoy Menu Platform
 
-Telegram bot for InJoy cafe guests to browse menu items and for staff to manage menu content from chat.
+Menu management platform for a cafe: guests browse the menu in web UI, and staff manage items through Telegram admin bot.
 
 ## Demo
 
-Add two current product screenshots before submission:
+- `docs/screenshots/user-menu.png` - web client for end users (categories and menu cards).
+- `docs/screenshots/admin-panel.png` - Telegram admin panel flow for staff.
 
-- `docs/screenshots/user-menu.png` - main user menu and category navigation.
-- `docs/screenshots/admin-panel.png` - admin panel with menu management actions.
-
-![User menu](docs/screenshots/user-menu.png)
-![Admin panel](docs/screenshots/admin-panel.png)
+![Web client menu](docs/screenshots/user-menu.png)
+![Telegram admin panel](docs/screenshots/admin-panel.png)
 
 ## Product context
 
 ### End users
 
-- Cafe guests who use Telegram.
-- Cafe staff and administrators.
+- Cafe guests who need a quick menu on mobile browser.
+- Cafe staff/admins who maintain menu content.
 
 ### Problem that your product solves for end users
 
-Guests need a fast mobile menu view instead of browsing static posts or files, and staff need a way to update menu data without manual database edits.
+Guests need an always-available digital menu that works on university VM deployment without Telegram limitations, while staff need fast in-chat menu administration.
 
 ### Your solution
 
-InJoy Menu Bot provides a button-based Telegram interface for guests and an in-chat admin panel for staff, backed by a FastAPI service with persistent SQLite storage.
+The product combines a FastAPI backend with SQLite, a web menu client for guests, and a Telegram admin bot for staff operations.
 
 ## Features
 
 ### Implemented features
 
-- User flow is button-based (inline keyboard), without command-heavy UX.
-- Menu is rendered as readable image cards per category (mobile-friendly).
-- Bot keeps one "live" panel message and edits it, so chat history stays clean.
-- Staff admins can open `/admin` panel and manage dishes via buttons:
-  - add
-  - edit
-  - delete
-  - hide/show availability
-  - hide/show all menu positions in one tap
-  - delete all menu positions in one tap (with confirmation)
-  - view all categories including unavailable positions
-- Main admins can add/remove regular admins directly from bot.
-- Backend API with persistent SQLite storage.
-- Seeded menu data stored in `backend/data/injoy.db`.
+- Public web client (`frontend/`) for browsing available menu items by category.
+- FastAPI backend with persistent SQLite storage.
+- Read-only public endpoint: `GET /public/menu`.
+- Protected admin API endpoints under `/menu/*` and `/admins/*` with bearer token.
+- Telegram admin bot with inline-keyboard admin panel:
+  - add/edit/delete items
+  - hide/show single item
+  - hide/show all items
+  - delete full menu with confirmation
+  - add/remove regular admins (main admin only)
+- Dockerized deployment via `docker compose` for backend, bot, and frontend.
 
 ### Not yet implemented features
 
-- Order placement and payment flow from Telegram.
-- Admin action history/audit log.
-- Multi-language bot interface (for example RU/EN toggle).
-- Web dashboard for non-Telegram menu management.
+- Customer ordering and payment flow.
+- Authentication for web admin dashboard.
+- Admin activity timeline/audit log UI.
+- Automated tests for frontend user flows.
 
 ## Usage
 
-### Guest flow
+### End-user web flow
 
-1. Open the bot in Telegram.
-2. Run `/start`.
-3. Choose menu categories using buttons.
-4. Browse menu cards and switch categories as needed.
+1. Open `http://<VM_IP>:8080`.
+2. Browse all available items.
+3. Select category in dropdown to filter.
+4. Press `Refresh` to sync current menu state from backend.
 
-### Admin flow
+### Staff/admin flow (Telegram)
 
-1. Make sure your Telegram ID is listed in `BOT_SUPER_ADMIN_IDS` (or in `BOT_ADMIN_IDS` as fallback).
-2. Open bot chat and run `/admin`.
-3. Use buttons to add, edit, delete, or toggle availability for menu positions.
-4. Use bulk actions to hide/show all or delete all positions (with confirmation).
+1. Ensure your Telegram `user_id` is in `BOT_SUPER_ADMIN_IDS` or `admin_users`.
+2. Open bot chat and run `/start`.
+3. Open `Admin Panel`.
+4. Manage menu content using buttons.
 
 ## Deployment
 
@@ -78,43 +73,47 @@ InJoy Menu Bot provides a button-based Telegram interface for guests and an in-c
 ### What should be installed on the VM
 
 - `git`
-- Docker Engine with `docker` CLI
+- Docker Engine
 - Docker Compose plugin (`docker compose`)
 
 ### Step-by-step deployment instructions
 
-1. Clone the repository and open project directory.
-2. Create environment file:
+1. Clone repository and enter project directory.
+2. Create env file:
 
 ```bash
 cp .env.example .env
 ```
 
-3. Set required values in `.env`:
-   - `BOT_TOKEN`
+3. Fill required `.env` values:
    - `BACKEND_API_TOKEN`
-   - `BOT_SUPER_ADMIN_IDS` (or `BOT_ADMIN_IDS` as fallback)
-4. Build and run services:
+   - `BOT_TOKEN`
+   - `BOT_SUPER_ADMIN_IDS` (or `BOT_ADMIN_IDS`)
+   - optionally `BACKEND_HOST_PORT` and `FRONTEND_HOST_PORT`
+4. Build and run all services:
 
 ```bash
 docker compose up -d --build
 ```
 
-5. Check backend health:
+5. Verify backend:
 
 ```bash
 curl -sS http://localhost:8000/health
 ```
 
-6. Open API docs in browser: `http://<VM_IP>:8000/docs`.
-7. If you changed `.env`, recreate bot container:
+6. Open services:
+   - Web client: `http://<VM_IP>:8080`
+   - Backend docs: `http://<VM_IP>:8000/docs`
+7. After env/config changes, recreate containers:
 
 ```bash
-docker compose up -d --force-recreate bot
+docker compose up -d --force-recreate
 ```
 
-## Project structure
+## Lab 9 Artifacts
 
-- `backend/` - FastAPI app with menu CRUD.
-- `bot/` - aiogram Telegram bot.
-- `docker-compose.yml` - service orchestration for local/dev deployment.
+- Task 2 plan: `docs/lab9/task2-project-plan.md`
+- Task 3 feedback log: `docs/lab9/task3-feedback-log.md`
+- Task 5 slide outline: `docs/lab9/task5-presentation-outline.md`
+- Submission checklist: `docs/lab9/submission-checklist.md`

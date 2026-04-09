@@ -1,6 +1,4 @@
-Place real product screenshots here before submission.
+Demo screenshots used in the main README.
 
-Required files referenced by the main README:
-
-- `user-menu.png` - guest-facing bot menu screen.
-- `admin-panel.png` - admin panel with management actions.
+- `user-menu.png` - web client menu browsing flow.
+- `admin-panel.png` - Telegram admin panel flow.

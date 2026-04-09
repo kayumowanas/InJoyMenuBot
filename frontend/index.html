@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>InJoy Menu</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <p class="kicker">InJoy Cafe</p>
+        <h1>Menu Browser</h1>
+        <p class="subtitle">Browse currently available items in one page.</p>
+      </header>
+
+      <section class="panel">
+        <div class="toolbar">
+          <label for="category-select">Category</label>
+          <select id="category-select">
+            <option value="">All categories</option>
+          </select>
+          <button id="refresh-btn" type="button">Refresh</button>
+        </div>
+        <p id="status" class="status">Loading menu...</p>
+      </section>
+
+      <section id="menu-grid" class="menu-grid" aria-live="polite"></section>
+    </main>
+
+    <template id="item-card-template">
+      <article class="item-card">
+        <div class="item-main">
+          <h2 class="item-name"></h2>
+          <p class="item-description"></p>
+        </div>
+        <div class="item-price"></div>
+      </article>
+    </template>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

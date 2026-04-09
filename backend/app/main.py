@@ -6,6 +6,7 @@ from app.auth import verify_api_key
 from app.database import init_db
 from app.routers import admins
 from app.routers import menu
+from app.routers import public
 from app.settings import settings
 
 
@@ -40,4 +41,10 @@ app.include_router(
     prefix="/admins",
     tags=["admins"],
     dependencies=[Depends(verify_api_key)],
+)
+
+app.include_router(
+    public.router,
+    prefix="/public",
+    tags=["public"],
 )

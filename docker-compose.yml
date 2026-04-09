@@ -30,3 +30,13 @@ services:
       - BACKEND_API_TOKEN=${BACKEND_API_TOKEN}
       - BOT_ADMIN_IDS=${BOT_ADMIN_IDS}
       - BOT_SUPER_ADMIN_IDS=${BOT_SUPER_ADMIN_IDS}
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_HOST_PORT}:80"
