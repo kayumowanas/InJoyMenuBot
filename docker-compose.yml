@@ -1,0 +1,32 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      - BACKEND_NAME=${BACKEND_NAME}
+      - BACKEND_DEBUG=${BACKEND_DEBUG}
+      - BACKEND_ADDRESS=0.0.0.0
+      - BACKEND_PORT=8000
+      - BACKEND_RELOAD=${BACKEND_RELOAD}
+      - BACKEND_API_TOKEN=${BACKEND_API_TOKEN}
+      - BACKEND_SQLITE_PATH=${BACKEND_SQLITE_PATH}
+    ports:
+      - "${BACKEND_HOST_PORT}:8000"
+    volumes:
+      - ./backend/data:/app/data
+
+  bot:
+    build:
+      context: .
+      dockerfile: bot/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - BACKEND_BASE_URL=http://backend:8000
+      - BACKEND_API_TOKEN=${BACKEND_API_TOKEN}
+      - BOT_ADMIN_IDS=${BOT_ADMIN_IDS}
+      - BOT_SUPER_ADMIN_IDS=${BOT_SUPER_ADMIN_IDS}

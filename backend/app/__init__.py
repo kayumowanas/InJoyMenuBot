@@ -1,0 +1,1 @@
+"""InJoy backend package."""
