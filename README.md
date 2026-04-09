@@ -1,13 +1,39 @@
 # InJoy Menu Bot
 
-Telegram bot for InJoy cafe menu.
+Telegram bot for InJoy cafe guests to browse menu items and for staff to manage menu content from chat.
+
+## Demo
+
+Add two current product screenshots before submission:
+
+- `docs/screenshots/user-menu.png` - main user menu and category navigation.
+- `docs/screenshots/admin-panel.png` - admin panel with menu management actions.
+
+![User menu](docs/screenshots/user-menu.png)
+![Admin panel](docs/screenshots/admin-panel.png)
+
+## Product context
+
+### End users
+
+- Cafe guests who use Telegram.
+- Cafe staff and administrators.
+
+### Problem that your product solves for end users
+
+Guests need a fast mobile menu view instead of browsing static posts or files, and staff need a way to update menu data without manual database edits.
+
+### Your solution
+
+InJoy Menu Bot provides a button-based Telegram interface for guests and an in-chat admin panel for staff, backed by a FastAPI service with persistent SQLite storage.
 
 ## Features
 
-- User flow is button-based (inline keyboard), without command-heavy UX
-- Bot uses text panels for navigation/admin, and image render only for menu cards
-- Menu is rendered as readable image cards per category (mobile-friendly)
-- Bot keeps one "live" panel message and edits it, so chat history stays clean
+### Implemented features
+
+- User flow is button-based (inline keyboard), without command-heavy UX.
+- Menu is rendered as readable image cards per category (mobile-friendly).
+- Bot keeps one "live" panel message and edits it, so chat history stays clean.
 - Staff admins can open `/admin` panel and manage dishes via buttons:
   - add
   - edit
@@ -16,87 +42,79 @@ Telegram bot for InJoy cafe menu.
   - hide/show all menu positions in one tap
   - delete all menu positions in one tap (with confirmation)
   - view all categories including unavailable positions
-- Main admins can add/remove regular admins directly from bot
-- Backend API with persistent SQLite storage
-- Automatic seed of menu data from your attached cafe photos (`backend/data/injoy.db`)
+- Main admins can add/remove regular admins directly from bot.
+- Backend API with persistent SQLite storage.
+- Seeded menu data stored in `backend/data/injoy.db`.
 
-## Project structure
+### Not yet implemented features
 
-- `backend/` - FastAPI app with menu CRUD
-- `bot/` - aiogram Telegram bot
-- `docker-compose.yml` - local run configuration
+- Order placement and payment flow from Telegram.
+- Admin action history/audit log.
+- Multi-language bot interface (for example RU/EN toggle).
+- Web dashboard for non-Telegram menu management.
 
-## Quick start
+## Usage
 
-1. Create env file:
+### Guest flow
+
+1. Open the bot in Telegram.
+2. Run `/start`.
+3. Choose menu categories using buttons.
+4. Browse menu cards and switch categories as needed.
+
+### Admin flow
+
+1. Make sure your Telegram ID is listed in `BOT_SUPER_ADMIN_IDS` (or in `BOT_ADMIN_IDS` as fallback).
+2. Open bot chat and run `/admin`.
+3. Use buttons to add, edit, delete, or toggle availability for menu positions.
+4. Use bulk actions to hide/show all or delete all positions (with confirmation).
+
+## Deployment
+
+### Which OS the VM should run on
+
+- Ubuntu 24.04 LTS.
+
+### What should be installed on the VM
+
+- `git`
+- Docker Engine with `docker` CLI
+- Docker Compose plugin (`docker compose`)
+
+### Step-by-step deployment instructions
+
+1. Clone the repository and open project directory.
+2. Create environment file:
 
 ```bash
 cp .env.example .env
 ```
 
-2. Set real `BOT_TOKEN`.
-   `BOT_SUPER_ADMIN_IDS` - main admins (can manage other admins).
-   `BOT_ADMIN_IDS` - backward-compatible fallback if `BOT_SUPER_ADMIN_IDS` is empty.
-   Supported separators: comma, space, semicolon.
-   You can run `/admin` in bot chat to see your Telegram user id.
-
-3. Run services:
+3. Set required values in `.env`:
+   - `BOT_TOKEN`
+   - `BACKEND_API_TOKEN`
+   - `BOT_SUPER_ADMIN_IDS` (or `BOT_ADMIN_IDS` as fallback)
+4. Build and run services:
 
 ```bash
-docker compose up --build
+docker compose up -d --build
 ```
 
-If you changed `.env` values (for example `BOT_TOKEN`), recreate bot container:
+5. Check backend health:
+
+```bash
+curl -sS http://localhost:8000/health
+```
+
+6. Open API docs in browser: `http://<VM_IP>:8000/docs`.
+7. If you changed `.env`, recreate bot container:
 
 ```bash
 docker compose up -d --force-recreate bot
 ```
 
-4. Open backend docs: `http://localhost:8000/docs`
+## Project structure
 
-## API overview
-
-All `/menu/*` endpoints require header:
-
-```text
-Authorization: Bearer <BACKEND_API_TOKEN>
-```
-
-- `GET /health`
-- `GET /menu/?only_available=true`
-- `POST /menu/`
-- `DELETE /menu/` (delete all items)
-- `PATCH /menu/availability/all` (set availability for all items)
-- `GET /menu/{item_id}`
-- `PUT /menu/{item_id}`
-- `DELETE /menu/{item_id}`
-- `PATCH /menu/{item_id}/availability`
-- `GET /admins/`
-- `POST /admins/`
-- `GET /admins/{user_id}`
-- `DELETE /admins/{user_id}`
-
-## Seeded database
-
-- SQLite file: `backend/data/injoy.db`
-- Current seed contains menu items with size-specific prices (S/M/L split into separate rows)
-- Also includes hot-dogs from the attached menu photo:
-  - Французский хот-дог — 249 ₽
-  - Датский хот-дог — 249 ₽
-
-## Local dev without docker
-
-Backend:
-
-```bash
-cd backend
-uv run --project . --python 3.12 python -m app.run
-```
-
-Bot:
-
-```bash
-cd bot
-uv run --project . python bot.py
-```
-# InJoyMenuBot
+- `backend/` - FastAPI app with menu CRUD.
+- `bot/` - aiogram Telegram bot.
+- `docker-compose.yml` - service orchestration for local/dev deployment.

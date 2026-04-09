@@ -161,7 +161,7 @@ def render_menu_image(
     total_rows_height = 0
 
     for item in items:
-        name = str(item.get("name") or "Без названия")
+        name = str(item.get("name") or "Untitled")
         desc = str(item.get("description") or "").strip()
         available = bool(item.get("available", True))
         price_text = _format_price(item.get("price"))
@@ -179,7 +179,7 @@ def render_menu_image(
                 row_height += _text_height(draw, line, row_desc_font) + 4
 
         if not available:
-            row_height += _text_height(draw, "Недоступно", badge_font) + 10
+            row_height += _text_height(draw, "Unavailable", badge_font) + 10
 
         row_height += content_padding_y
 
@@ -239,7 +239,7 @@ def render_menu_image(
 
         if not bool(row["available"]):
             text_y += 8
-            draw.text((text_x, text_y), "Недоступно", font=badge_font, fill=PALETTE.unavailable)
+            draw.text((text_x, text_y), "Unavailable", font=badge_font, fill=PALETTE.unavailable)
 
         price_text = str(row["price_text"])
         price_w = draw.textbbox((0, 0), price_text, font=price_font)[2]

@@ -21,6 +21,15 @@ def _database_url() -> str:
 engine = create_async_engine(_database_url(), echo=False)
 
 LEGACY_SEED_NAMES = {"Cappuccino", "Chicken Wrap", "Cheesecake"}
+OBSOLETE_RU_SEED_CATEGORIES = {
+    "Фирменные напитки",
+    "Сезонные напитки",
+    "Айс напитки",
+    "Классические напитки",
+    "Горячие напитки",
+    "Добавки",
+    "Хот-доги",
+}
 
 
 async def get_session() -> AsyncGenerator[AsyncSession]:
@@ -29,7 +38,7 @@ async def get_session() -> AsyncGenerator[AsyncSession]:
 
 
 def _build_seed_menu_items() -> list[MenuItem]:
-    default_volumes = {"S": "250 мл", "M": "300 мл", "L": "450 мл"}
+    default_volumes = {"S": "250 ml", "M": "300 ml", "L": "450 ml"}
 
     def with_sizes(
         *,
@@ -43,7 +52,7 @@ def _build_seed_menu_items() -> list[MenuItem]:
             MenuItem(
                 name=f"{title} — {size} ({size_volumes[size]})",
                 category=category,
-                description=f"{title}, размер {size}",
+                description=f"{title}, size {size}",
                 price=price,
                 available=True,
             )
@@ -52,208 +61,208 @@ def _build_seed_menu_items() -> list[MenuItem]:
 
     items: list[MenuItem] = []
 
-    # Фирменные напитки
+    # Signature drinks
     for drink in [
-        "Раф птичье молоко",
-        "Капучино кекс-клюква",
-        "Латте бананелла",
-        "Раф бельгийская вафля",
+        "Raf Bird's Milk",
+        "Cappuccino Cupcake Cranberry",
+        "Latte Bananella",
+        "Raf Belgian Waffle",
     ]:
         items.extend(
             with_sizes(
                 title=drink,
-                category="Фирменные напитки",
+                category="Signature Drinks",
                 prices={"S": 229, "M": 249, "L": 269},
             )
         )
 
-    # Сезонные напитки
+    # Seasonal drinks
     for drink in [
-        "Лимонад Нефанта",
-        "Лимонад Фейхоа базилик",
-        "Лимонад Смородина-фиалка",
-        "Лимонад Тархун",
+        "Lemonade Nefanta",
+        "Lemonade Feijoa Basil",
+        "Lemonade Currant Violet",
+        "Lemonade Tarragon",
     ]:
         items.extend(
             with_sizes(
                 title=drink,
-                category="Сезонные напитки",
+                category="Seasonal Drinks",
                 prices={"M": 249, "L": 269},
             )
         )
 
-    # Айс напитки
+    # Iced drinks
     for drink, price in [
-        ("Фраппучино классический", 299),
-        ("Фраппучино-баунти", 299),
-        ("Милкшейк ванильный", 249),
-        ("Милкшейк смородина-баблгам", 249),
-        ("Милкшейк малиновый", 249),
-        ("Айс латте", 249),
-        ("Айс раф", 249),
-        ("Айс капучино сникерс", 249),
-        ("Эспрессо-тоник", 249),
-        ("Айс матча латте", 249),
-        ("Бамбл апельсиновый", 249),
-        ("Бамбл вишневый", 249),
+        ("Classic Frappuccino", 299),
+        ("Bounty Frappuccino", 299),
+        ("Vanilla Milkshake", 249),
+        ("Currant Bubblegum Milkshake", 249),
+        ("Raspberry Milkshake", 249),
+        ("Iced Latte", 249),
+        ("Iced Raf", 249),
+        ("Iced Snickers Cappuccino", 249),
+        ("Espresso Tonic", 249),
+        ("Iced Matcha Latte", 249),
+        ("Orange Bumble", 249),
+        ("Cherry Bumble", 249),
     ]:
         items.extend(
             with_sizes(
                 title=drink,
-                category="Айс напитки",
+                category="Iced Drinks",
                 prices={"M": price},
             )
         )
 
-    # Классические напитки
+    # Classic drinks
     items.extend(
-        with_sizes(title="Эспрессо", category="Классические напитки", prices={"S": 99})
+        with_sizes(title="Espresso", category="Classic Drinks", prices={"S": 99})
     )
     items.extend(
         with_sizes(
-            title="Двойной эспрессо (60 мл)",
-            category="Классические напитки",
+            title="Double Espresso (60 ml)",
+            category="Classic Drinks",
             prices={"S": 119},
         )
     )
     items.extend(
         with_sizes(
-            title="Флэт уайт", category="Классические напитки", prices={"S": 189}
+            title="Flat White", category="Classic Drinks", prices={"S": 189}
         )
     )
     items.extend(
         with_sizes(
-            title="Американо",
-            category="Классические напитки",
+            title="Americano",
+            category="Classic Drinks",
             prices={"S": 159, "M": 179, "L": 229},
         )
     )
     items.extend(
         with_sizes(
-            title="Капучино",
-            category="Классические напитки",
+            title="Cappuccino",
+            category="Classic Drinks",
             prices={"S": 169, "M": 189, "L": 239},
         )
     )
     items.extend(
         with_sizes(
-            title="Латте",
-            category="Классические напитки",
+            title="Latte",
+            category="Classic Drinks",
             prices={"S": 169, "M": 189, "L": 239},
         )
     )
     items.extend(
         with_sizes(
-            title="Раф",
-            category="Классические напитки",
+            title="Raf",
+            category="Classic Drinks",
             prices={"S": 199, "M": 239, "L": 269},
         )
     )
     items.extend(
         with_sizes(
-            title="Мокко",
-            category="Классические напитки",
+            title="Mocha",
+            category="Classic Drinks",
             prices={"S": 189, "M": 229, "L": 259},
         )
     )
     items.extend(
         with_sizes(
-            title="Глясе",
-            category="Классические напитки",
+            title="Affogato",
+            category="Classic Drinks",
             prices={"S": 189, "M": 229, "L": 259},
         )
     )
     items.extend(
         with_sizes(
-            title="Фильтр кофе",
-            category="Классические напитки",
+            title="Filter Coffee",
+            category="Classic Drinks",
             prices={"S": 189, "M": 229, "L": 259},
         )
     )
 
-    # Горячие напитки
+    # Hot drinks
     items.extend(
         with_sizes(
-            title="Чай черный/зеленый",
-            category="Горячие напитки",
+            title="Black/Green Tea",
+            category="Hot Drinks",
             prices={"S": 99, "M": 99, "L": 99},
         )
     )
     items.extend(
         with_sizes(
-            title="Ягодный чай",
-            category="Горячие напитки",
+            title="Berry Tea",
+            category="Hot Drinks",
             prices={"S": 149, "M": 149, "L": 149},
         )
     )
     items.extend(
         with_sizes(
-            title="Какао",
-            category="Горячие напитки",
+            title="Cocoa",
+            category="Hot Drinks",
             prices={"S": 159, "M": 179, "L": 219},
         )
     )
     items.extend(
         with_sizes(
-            title="Горячий шоколад",
-            category="Горячие напитки",
+            title="Hot Chocolate",
+            category="Hot Drinks",
             prices={"S": 189, "M": 209, "L": 239},
         )
     )
     items.extend(
         with_sizes(
-            title="Матча латте",
-            category="Горячие напитки",
+            title="Matcha Latte",
+            category="Hot Drinks",
             # M/L partially covered by reflection on the photo,
             # values are set based on the visible digits and menu pattern.
             prices={"S": 179, "M": 209, "L": 239},
         )
     )
 
-    # Добавки
+    # Add-ons
     items.extend(
         with_sizes(
-            title="Маршмеллоу, молоко",
-            category="Добавки",
+            title="Marshmallow, Milk",
+            category="Add-ons",
             prices={"S": 30, "M": 30, "L": 30},
         )
     )
     items.extend(
         with_sizes(
-            title="Сливки 10%",
-            category="Добавки",
+            title="Cream 10%",
+            category="Add-ons",
             prices={"S": 50, "M": 50, "L": 50},
         )
     )
     items.extend(
         with_sizes(
-            title="Взбитые сливки",
-            category="Добавки",
+            title="Whipped Cream",
+            category="Add-ons",
             prices={"S": 70, "M": 80, "L": 90},
         )
     )
     items.extend(
         with_sizes(
-            title="Любой напиток на растительном молоке",
-            category="Добавки",
+            title="Any Drink with Plant-Based Milk",
+            category="Add-ons",
             prices={"S": 30, "M": 30, "L": 30},
         )
     )
     items.extend(
         with_sizes(
-            title="Сироп",
-            category="Добавки",
+            title="Syrup",
+            category="Add-ons",
             # Price row is partially hidden by the stand; set to the common add-on price.
             prices={"S": 30, "M": 30, "L": 30},
         )
     )
 
-    # Хот-доги (по отдельной карточке меню)
-    for name in ["Французский хот-дог", "Датский хот-дог"]:
+    # Hot dogs (from a separate menu card)
+    for name in ["French Hot Dog", "Danish Hot Dog"]:
         items.append(
             MenuItem(
                 name=name,
-                category="Хот-доги",
+                category="Hot Dogs",
                 description=f"{name}",
                 price=249,
                 available=True,
@@ -268,6 +277,15 @@ async def init_db() -> None:
         await conn.run_sync(SQLModel.metadata.create_all)
 
     async with AsyncSession(engine) as session:
+        obsolete_ru_items_result = await session.exec(
+            select(MenuItem).where(MenuItem.category.in_(tuple(OBSOLETE_RU_SEED_CATEGORIES)))
+        )
+        obsolete_ru_items = list(obsolete_ru_items_result.all())
+        if obsolete_ru_items:
+            for item in obsolete_ru_items:
+                await session.delete(item)
+            await session.commit()
+
         seed_items = _build_seed_menu_items()
         existing_names_result = await session.exec(select(MenuItem.name))
         existing_names = list(existing_names_result.all())

@@ -77,7 +77,7 @@ def _keyboard(rows: list[list[tuple[str, str]]]) -> InlineKeyboardMarkup:
 def _category_button_label(category: str) -> str:
     cleaned = re.sub(r"\s+", " ", category.strip())
     if not cleaned:
-        return "Без категории"
+        return "Uncategorized"
 
     if len(cleaned) <= 20:
         return cleaned
@@ -111,15 +111,15 @@ def _consume_pending_admin_notice(user_id: int | None) -> str | None:
     if user_id not in pending_admin_notice_ids:
         return None
     pending_admin_notice_ids.discard(user_id)
-    return "Тебе выданы права администратора."
+    return "You have been granted admin access."
 
 
 def _home_keyboard(*, is_admin: bool) -> InlineKeyboardMarkup:
     rows: list[list[tuple[str, str]]] = [
-        [("🍽 Меню", "menu")],
+        [("🍽 Menu", "menu")],
     ]
     if is_admin:
-        rows.append([("⚙️ Админ-панель", "admin")])
+        rows.append([("⚙️ Admin Panel", "admin")])
     return _keyboard(rows)
 
 
@@ -129,15 +129,15 @@ def _menu_categories_keyboard(categories: list[str]) -> InlineKeyboardMarkup:
         for idx, category in enumerate(categories)
     ]
 
-    rows.append([("🏠 Главная", "home")])
+    rows.append([("🏠 Home", "home")])
     return _keyboard(rows)
 
 
 def _menu_category_keyboard(category_index: int) -> InlineKeyboardMarkup:
     return _keyboard(
         [
-            [("⬅️ Категории", "menu"), ("🔄 Обновить", f"menucat:{category_index}")],
-            [("🏠 Главная", "home")],
+            [("⬅️ Categories", "menu"), ("🔄 Refresh", f"menucat:{category_index}")],
+            [("🏠 Home", "home")],
         ]
     )
 
@@ -145,16 +145,16 @@ def _menu_category_keyboard(category_index: int) -> InlineKeyboardMarkup:
 def _admin_keyboard() -> InlineKeyboardMarkup:
     return _keyboard(
         [
-            [("➕ Добавить", "admin:add")],
-            [("✏️ Редактировать", "admin:edit")],
-            [("👁 Скрыть / Показать", "admin:toggle")],
-            [("🗑 Удалить", "admin:delete")],
-            [("🚫 Скрыть всё", "admin:hideall")],
-            [("✅ Показать всё", "admin:showall")],
-            [("🧨 Удалить всё меню", "admin:deleteall")],
-            [("👥 Администраторы", "admin:admins")],
-            [("📋 Показать всё меню", "admin:viewall")],
-            [("🏠 Главная", "home")],
+            [("➕ Add Item", "admin:add")],
+            [("✏️ Edit Item", "admin:edit")],
+            [("👁 Hide / Show", "admin:toggle")],
+            [("🗑 Delete Item", "admin:delete")],
+            [("🚫 Hide All", "admin:hideall")],
+            [("✅ Show All", "admin:showall")],
+            [("🧨 Delete Entire Menu", "admin:deleteall")],
+            [("👥 Admin Users", "admin:admins")],
+            [("📋 View Full Menu", "admin:viewall")],
+            [("🏠 Home", "home")],
         ]
     )
 
@@ -165,7 +165,7 @@ def _admin_categories_keyboard(action: ActionName, categories: list[str]) -> Inl
         for idx, category in enumerate(categories)
     ]
 
-    rows.append([("⬅️ Админ-панель", "admin")])
+    rows.append([("⬅️ Admin Panel", "admin")])
     return _keyboard(rows)
 
 
@@ -180,29 +180,29 @@ def _admin_items_keyboard(
         item_id = int(item.get("id", 0))
         available = bool(item.get("available", True))
         icon = "🟢" if available else "⚪️"
-        name = str(item.get("name") or "Без названия")
+        name = str(item.get("name") or "Untitled")
         short_name = name if len(name) <= 56 else f"{name[:53]}..."
         label = f"{icon} #{item_id} {short_name}"
         rows.append([(label, f"admin:item:{action}:{item_id}:{category_index}")])
 
     rows.append(
         [
-            ("⬅️ Категории", f"admin:{action}"),
-            ("⚙️ Админ", "admin"),
+            ("⬅️ Categories", f"admin:{action}"),
+            ("⚙️ Admin", "admin"),
         ]
     )
     return _keyboard(rows)
 
 
 def _cancel_input_keyboard() -> InlineKeyboardMarkup:
-    return _keyboard([[("⬅️ Отмена", "admin:cancel")]])
+    return _keyboard([[("⬅️ Cancel", "admin:cancel")]])
 
 
 def _confirm_bulk_keyboard(action: BulkActionName) -> InlineKeyboardMarkup:
     return _keyboard(
         [
-            [("✅ Подтвердить", f"admin:confirm:{action}")],
-            [("⬅️ Назад в админку", "admin")],
+            [("✅ Confirm", f"admin:confirm:{action}")],
+            [("⬅️ Back to Admin Panel", "admin")],
         ]
     )
 
@@ -221,17 +221,17 @@ def _parse_admin_payload(text: str) -> tuple[str, float, str, str]:
     parts = [part.strip() for part in text.split("|")]
     if len(parts) < 3:
         raise ValueError(
-            "Формат: Название | Цена | Категория | Описание(опционально)"
+            "Format: Name | Price | Category | Description (optional)"
         )
 
     name = parts[0]
     if not name:
-        raise ValueError("Название не может быть пустым.")
+        raise ValueError("Name cannot be empty.")
 
     try:
         price = float(parts[1].replace(",", "."))
     except ValueError as exc:
-        raise ValueError("Цена должна быть числом.") from exc
+        raise ValueError("Price must be a number.") from exc
 
     category = parts[2] or "Other"
     description = parts[3] if len(parts) > 3 else ""
@@ -241,19 +241,19 @@ def _parse_admin_payload(text: str) -> tuple[str, float, str, str]:
 def _parse_user_id_payload(text: str) -> int:
     value = (text or "").strip()
     if not value:
-        raise ValueError("Нужно отправить числовой Telegram user_id.")
+        raise ValueError("Please send a numeric Telegram user_id.")
     try:
         user_id = int(value)
     except ValueError as exc:
-        raise ValueError("Telegram user_id должен быть числом.") from exc
+        raise ValueError("Telegram user_id must be a number.") from exc
     if user_id <= 0:
-        raise ValueError("Telegram user_id должен быть положительным числом.")
+        raise ValueError("Telegram user_id must be a positive number.")
     return user_id
 
 
 def _format_id_list(ids: list[int]) -> str:
     if not ids:
-        return "нет"
+        return "none"
     limit = 15
     preview = ", ".join(str(item) for item in ids[:limit])
     if len(ids) > limit:
@@ -420,8 +420,8 @@ async def _show_home(
     notice: str | None = None,
 ) -> None:
     lines = [
-        "Выбирай действие кнопками ниже.",
-        "Команды больше не нужны для обычной работы.",
+        "Choose an action using the buttons below.",
+        "Commands are no longer required for normal use.",
     ]
     if notice:
         lines.extend(["", f"{notice}"])
@@ -429,7 +429,7 @@ async def _show_home(
     await _update_text_panel(
         bot,
         chat_id=chat_id,
-        text=_build_panel_text("Главное меню", lines),
+        text=_build_panel_text("Main Menu", lines),
         reply_markup=_home_keyboard(is_admin=_is_admin_user(user_id)),
         preferred_message_id=preferred_message_id,
     )
@@ -446,25 +446,25 @@ async def _show_menu_categories(
     categories = _categories_from_items(items)
 
     if not categories:
-        lines = ["Сейчас нет доступных позиций меню."]
+        lines = ["There are currently no available menu items."]
         if notice:
             lines.extend(["", notice])
         await _update_text_panel(
             bot,
             chat_id=chat_id,
-            text=_build_panel_text("Меню временно пусто", lines),
-            reply_markup=_keyboard([[("🏠 Главная", "home")]]),
+            text=_build_panel_text("Menu Is Temporarily Empty", lines),
+            reply_markup=_keyboard([[("🏠 Home", "home")]]),
             preferred_message_id=preferred_message_id,
         )
         return
 
-    lines = ["Выбери категорию напитков/блюд."]
+    lines = ["Choose a drinks/food category."]
     if notice:
         lines.extend(["", notice])
     await _update_text_panel(
         bot,
         chat_id=chat_id,
-        text=_build_panel_text("Меню InJoy", lines),
+        text=_build_panel_text("InJoy Menu", lines),
         reply_markup=_menu_categories_keyboard(categories),
         preferred_message_id=preferred_message_id,
     )
@@ -490,22 +490,22 @@ async def _show_menu_category(
                 chat_id=chat_id,
                 action="viewall",
                 preferred_message_id=preferred_message_id,
-                notice="Категория больше не существует.",
+                notice="This category no longer exists.",
             )
         else:
             await _show_menu_categories(
                 bot,
                 chat_id=chat_id,
                 preferred_message_id=preferred_message_id,
-                notice="Категория больше не существует.",
+                notice="This category no longer exists.",
             )
         return
 
     category = categories[category_index]
     category_items = [item for item in items if str(item.get("category") or "Other") == category]
 
-    subtitle_parts = [f"{len(category_items)} позиций"]
-    subtitle_parts.append("все" if include_unavailable else "только доступные")
+    subtitle_parts = [f"{len(category_items)} items"]
+    subtitle_parts.append("all" if include_unavailable else "available only")
     subtitle = " • ".join(subtitle_parts)
 
     image = render_menu_image(
@@ -517,8 +517,8 @@ async def _show_menu_category(
     if back_to_admin:
         keyboard = _keyboard(
             [
-                [("⬅️ Категории", "admin:viewall"), ("⚙️ Админ", "admin")],
-                [("🏠 Главная", "home")],
+                [("⬅️ Categories", "admin:viewall"), ("⚙️ Admin", "admin")],
+                [("🏠 Home", "home")],
             ]
         )
     else:
@@ -552,14 +552,14 @@ async def _show_admin_dashboard(
             chat_id=chat_id,
             user_id=user_id,
             preferred_message_id=preferred_message_id,
-            notice="У тебя нет доступа к админ-панели.",
+            notice="You do not have access to the admin panel.",
         )
         return
 
     lines = [
-        "Здесь можно управлять меню InJoy.",
-        "Добавление, редактирование, удаление и переключение доступности — в один тап.",
-        "Есть массовые действия: скрыть всё, показать всё, удалить всё меню.",
+        "Manage the InJoy menu from here.",
+        "Add, edit, delete, and toggle availability in one tap.",
+        "Bulk actions are available: hide all, show all, delete all.",
     ]
     if notice:
         lines.extend(["", notice])
@@ -567,7 +567,7 @@ async def _show_admin_dashboard(
     await _update_text_panel(
         bot,
         chat_id=chat_id,
-        text=_build_panel_text("Админ-панель", lines),
+        text=_build_panel_text("Admin Panel", lines),
         reply_markup=_admin_keyboard(),
         preferred_message_id=preferred_message_id,
     )
@@ -587,9 +587,9 @@ async def _show_admin_users_panel(
     )
 
     lines = [
-        f"Главные админы: {_format_id_list(super_admin_ids)}",
-        f"Обычные админы: {_format_id_list(regular_admin_ids)}",
-        "Главный админ может добавлять/удалять только обычных админов.",
+        f"Main admins: {_format_id_list(super_admin_ids)}",
+        f"Regular admins: {_format_id_list(regular_admin_ids)}",
+        "Only main admins can add/remove regular admins.",
     ]
     if notice:
         lines.extend(["", notice])
@@ -597,12 +597,12 @@ async def _show_admin_users_panel(
     await _update_text_panel(
         bot,
         chat_id=chat_id,
-        text=_build_panel_text("Управление администраторами", lines),
+        text=_build_panel_text("Admin Management", lines),
         reply_markup=_keyboard(
             [
-                [("➕ Добавить админа", "admin:admins:add")],
-                [("➖ Удалить админа", "admin:admins:remove")],
-                [("⬅️ Админ-панель", "admin")],
+                [("➕ Add Admin", "admin:admins:add")],
+                [("➖ Remove Admin", "admin:admins:remove")],
+                [("⬅️ Admin Panel", "admin")],
             ]
         ),
         preferred_message_id=preferred_message_id,
@@ -624,20 +624,20 @@ async def _show_admin_category_picker(
         await _update_text_panel(
             bot,
             chat_id=chat_id,
-            text=_build_panel_text("Админ-панель", ["В меню пока нет позиций."]),
+            text=_build_panel_text("Admin Panel", ["There are no menu items yet."]),
             reply_markup=_admin_keyboard(),
             preferred_message_id=preferred_message_id,
         )
         return
 
     action_title = {
-        "edit": "Редактирование",
-        "delete": "Удаление",
-        "toggle": "Скрыть / Показать",
-        "viewall": "Просмотр всего меню",
+        "edit": "Edit",
+        "delete": "Delete",
+        "toggle": "Hide / Show",
+        "viewall": "View Full Menu",
     }[action]
 
-    lines = ["Выбери категорию для следующего шага."]
+    lines = ["Choose a category for the next step."]
     if notice:
         lines.extend(["", notice])
 
@@ -664,11 +664,11 @@ async def _show_admin_items_picker(
     if category_index < 0 or category_index >= len(categories):
         await _show_admin_category_picker(
             bot,
-            chat_id=chat_id,
-            action=action,
-            preferred_message_id=preferred_message_id,
-            notice="Категория не найдена.",
-        )
+                chat_id=chat_id,
+                action=action,
+                preferred_message_id=preferred_message_id,
+                notice="Category not found.",
+            )
         return
 
     category = categories[category_index]
@@ -677,21 +677,21 @@ async def _show_admin_items_picker(
     if not category_items:
         await _show_admin_category_picker(
             bot,
-            chat_id=chat_id,
-            action=action,
-            preferred_message_id=preferred_message_id,
-            notice="В категории пока нет позиций.",
-        )
+                chat_id=chat_id,
+                action=action,
+                preferred_message_id=preferred_message_id,
+                notice="There are no items in this category yet.",
+            )
         return
 
     action_title = {
-        "edit": "Выбери блюдо для редактирования",
-        "delete": "Выбери блюдо для удаления",
-        "toggle": "Выбери блюдо для скрытия/показа",
-        "viewall": "Выбери категорию для просмотра",
+        "edit": "Choose an item to edit",
+        "delete": "Choose an item to delete",
+        "toggle": "Choose an item to hide/show",
+        "viewall": "Choose a category to preview",
     }[action]
 
-    lines = [f"Категория: {category}", f"Позиций: {len(category_items)}"]
+    lines = [f"Category: {category}", f"Items: {len(category_items)}"]
     if notice:
         lines.extend(["", notice])
 
@@ -712,9 +712,9 @@ async def _prompt_add_form(
     notice: str | None = None,
 ) -> None:
     lines = [
-        "Отправь данные одним сообщением:",
-        "Название | Цена | Категория | Описание(опционально)",
-        "Пример: Латте халва | 249 | Фирменные напитки | Латте с халвенным сиропом",
+        "Send data in one message:",
+        "Name | Price | Category | Description (optional)",
+        "Example: Halva Latte | 249 | Signature Drinks | Latte with halva syrup",
     ]
     if notice:
         lines.extend(["", notice])
@@ -722,7 +722,7 @@ async def _prompt_add_form(
     await _update_text_panel(
         bot,
         chat_id=chat_id,
-        text=_build_panel_text("Добавление блюда", lines),
+        text=_build_panel_text("Add Item", lines),
         reply_markup=_cancel_input_keyboard(),
         preferred_message_id=preferred_message_id,
     )
@@ -737,10 +737,10 @@ async def _prompt_edit_form(
     notice: str | None = None,
 ) -> None:
     lines = [
-        f"Текущий ID: #{item.get('id')}",
-        f"Текущее: {item.get('name')} | {_format_price(item.get('price'))} | {item.get('category')}",
-        "Отправь новые данные одним сообщением:",
-        "Название | Цена | Категория | Описание(опционально)",
+        f"Current ID: #{item.get('id')}",
+        f"Current: {item.get('name')} | {_format_price(item.get('price'))} | {item.get('category')}",
+        "Send updated data in one message:",
+        "Name | Price | Category | Description (optional)",
     ]
     if notice:
         lines.extend(["", notice])
@@ -748,7 +748,7 @@ async def _prompt_edit_form(
     await _update_text_panel(
         bot,
         chat_id=chat_id,
-        text=_build_panel_text("Редактирование блюда", lines),
+        text=_build_panel_text("Edit Item", lines),
         reply_markup=_cancel_input_keyboard(),
         preferred_message_id=preferred_message_id,
     )
@@ -762,8 +762,8 @@ async def _prompt_add_admin_user_form(
     notice: str | None = None,
 ) -> None:
     lines = [
-        "Отправь Telegram user_id нового админа одним числом.",
-        "Пример: 821709304",
+        "Send the new admin's Telegram user_id as a single number.",
+        "Example: 821709304",
     ]
     if notice:
         lines.extend(["", notice])
@@ -771,7 +771,7 @@ async def _prompt_add_admin_user_form(
     await _update_text_panel(
         bot,
         chat_id=chat_id,
-        text=_build_panel_text("Добавление администратора", lines),
+        text=_build_panel_text("Add Admin", lines),
         reply_markup=_cancel_input_keyboard(),
         preferred_message_id=preferred_message_id,
     )
@@ -785,8 +785,8 @@ async def _prompt_remove_admin_user_form(
     notice: str | None = None,
 ) -> None:
     lines = [
-        "Отправь Telegram user_id администратора, которого нужно удалить.",
-        "Главных админов удалить нельзя.",
+        "Send the Telegram user_id of the admin to remove.",
+        "Main admins cannot be removed.",
     ]
     if notice:
         lines.extend(["", notice])
@@ -794,7 +794,7 @@ async def _prompt_remove_admin_user_form(
     await _update_text_panel(
         bot,
         chat_id=chat_id,
-        text=_build_panel_text("Удаление администратора", lines),
+        text=_build_panel_text("Remove Admin", lines),
         reply_markup=_cancel_input_keyboard(),
         preferred_message_id=preferred_message_id,
     )
@@ -802,7 +802,7 @@ async def _prompt_remove_admin_user_form(
 
 async def _notify_new_admin_access(bot: Bot, user_id: int) -> bool:
     pending_admin_notice_ids.add(user_id)
-    notice_text = "Тебе выданы права администратора."
+    notice_text = "You have been granted admin access."
     try:
         sent = await bot.send_message(
             chat_id=user_id,
@@ -832,24 +832,24 @@ async def _show_bulk_confirmation(
 ) -> None:
     content_map: dict[BulkActionName, tuple[str, list[str]]] = {
         "hideall": (
-            "Скрыть всё меню",
+            "Hide Entire Menu",
             [
-                "Это действие пометит все позиции как недоступные.",
-                "Позиции не удаляются, их можно вернуть через «Показать всё».",
+                "This action marks all items as unavailable.",
+                "Items are not deleted. You can restore them via 'Show All'.",
             ],
         ),
         "showall": (
-            "Показать всё меню",
+            "Show Entire Menu",
             [
-                "Это действие пометит все позиции как доступные.",
-                "Пользователи снова увидят все блюда в меню.",
+                "This action marks all items as available.",
+                "Users will see all menu items again.",
             ],
         ),
         "deleteall": (
-            "Удалить всё меню",
+            "Delete Entire Menu",
             [
-                "Это действие удалит все позиции без возможности восстановления.",
-                "Используй только если действительно нужно очистить меню целиком.",
+                "This action deletes all items permanently.",
+                "Use it only if you really want to clear the entire menu.",
             ],
         ),
     }
@@ -867,21 +867,20 @@ async def _show_bulk_confirmation(
 async def _ensure_admin_callback(callback: CallbackQuery) -> bool:
     if _is_admin_user(callback.from_user.id if callback.from_user else None):
         return True
-    await callback.answer("Нет доступа к админ-панели", show_alert=True)
+    await callback.answer("No access to the admin panel", show_alert=True)
     return False
 
 
 async def _ensure_super_admin_callback(callback: CallbackQuery) -> bool:
     if _is_super_admin_user(callback.from_user.id if callback.from_user else None):
         return True
-    await callback.answer("Доступно только главному администратору", show_alert=True)
+    await callback.answer("Main admin access only", show_alert=True)
     return False
 
 
 async def on_start(message: Message, state: FSMContext) -> None:
     await state.clear()
     await _refresh_admin_cache()
-    await _safe_delete_user_message(message)
     user_id = message.from_user.id if message.from_user else None
     notice = _consume_pending_admin_notice(user_id)
 
@@ -909,13 +908,13 @@ async def on_admin_command(message: Message, state: FSMContext) -> None:
     await _safe_delete_user_message(message)
     user_id = message.from_user.id if message.from_user else None
     if user_id is None:
-        lines = ["Не удалось определить Telegram ID."]
+        lines = ["Could not determine Telegram ID."]
     else:
         lines = [str(user_id)]
     await _update_text_panel(
         message.bot,
         chat_id=message.chat.id,
-        text=_build_panel_text("Твой Telegram ID", lines),
+        text=_build_panel_text("Your Telegram ID", lines),
         reply_markup=_home_keyboard(is_admin=_is_admin_user(user_id)),
         preferred_message_id=panel_message_ids.get(message.chat.id),
     )
@@ -972,7 +971,7 @@ async def on_menu_category_callback(callback: CallbackQuery, state: FSMContext) 
     try:
         category_index = int(raw)
     except ValueError:
-        await callback.answer("Некорректная категория")
+        await callback.answer("Invalid category")
         return
 
     try:
@@ -1070,7 +1069,7 @@ async def on_admin_bulk_action_prepare(callback: CallbackQuery, state: FSMContex
     await state.clear()
     action = callback.data.removeprefix("admin:")
     if action not in {"hideall", "showall", "deleteall"}:
-        await callback.answer("Неизвестное действие")
+        await callback.answer("Unknown action")
         return
 
     await _show_bulk_confirmation(
@@ -1089,27 +1088,27 @@ async def on_admin_bulk_action_confirm(callback: CallbackQuery, state: FSMContex
     await state.clear()
     parts = callback.data.split(":")
     if len(parts) != 3:
-        await callback.answer("Некорректное действие")
+        await callback.answer("Invalid action")
         return
 
     action = parts[2]
     if action not in {"hideall", "showall", "deleteall"}:
-        await callback.answer("Неизвестное действие")
+        await callback.answer("Unknown action")
         return
 
     try:
         if action == "hideall":
             payload = await api_client.set_all_availability(available=False)
             updated = int(payload.get("updated", 0))
-            notice = f"Скрыто позиций: {updated}."
+            notice = f"Hidden items: {updated}."
         elif action == "showall":
             payload = await api_client.set_all_availability(available=True)
             updated = int(payload.get("updated", 0))
-            notice = f"Показано позиций: {updated}."
+            notice = f"Shown items: {updated}."
         else:
             payload = await api_client.delete_all_menu_items()
             deleted = int(payload.get("deleted", 0))
-            notice = f"Удалено позиций: {deleted}."
+            notice = f"Deleted items: {deleted}."
     except BackendError as exc:
         await _show_admin_dashboard(
             callback.bot,
@@ -1138,7 +1137,7 @@ async def on_admin_action_categories(callback: CallbackQuery, state: FSMContext)
     await state.clear()
     action = callback.data.removeprefix("admin:")
     if action not in {"edit", "delete", "toggle", "viewall"}:
-        await callback.answer("Неизвестное действие")
+        await callback.answer("Unknown action")
         return
 
     try:
@@ -1166,14 +1165,14 @@ async def on_admin_category_selected(callback: CallbackQuery, state: FSMContext)
     await state.clear()
     parts = callback.data.split(":")
     if len(parts) != 4:
-        await callback.answer("Некорректный выбор")
+        await callback.answer("Invalid selection")
         return
 
     _, _, action, index_raw = parts
     try:
         category_index = int(index_raw)
     except ValueError:
-        await callback.answer("Некорректный индекс категории")
+        await callback.answer("Invalid category index")
         return
 
     try:
@@ -1212,7 +1211,7 @@ async def on_admin_item_selected(callback: CallbackQuery, state: FSMContext) -> 
     await state.clear()
     parts = callback.data.split(":")
     if len(parts) != 5:
-        await callback.answer("Некорректный выбор")
+        await callback.answer("Invalid selection")
         return
 
     _, _, action, item_id_raw, category_index_raw = parts
@@ -1220,7 +1219,7 @@ async def on_admin_item_selected(callback: CallbackQuery, state: FSMContext) -> 
         item_id = int(item_id_raw)
         category_index = int(category_index_raw)
     except ValueError:
-        await callback.answer("Некорректный id")
+        await callback.answer("Invalid id")
         return
 
     try:
@@ -1232,29 +1231,29 @@ async def on_admin_item_selected(callback: CallbackQuery, state: FSMContext) -> 
                 action="delete",
                 category_index=category_index,
                 preferred_message_id=callback.message.message_id,
-                notice=f"Позиция #{item_id} удалена.",
+                notice=f"Item #{item_id} deleted.",
             )
         elif action == "toggle":
             item = await api_client.get_menu_item(item_id=item_id)
             if not item:
-                raise BackendError("Позиция не найдена")
+                raise BackendError("Item not found")
             updated = await api_client.set_availability(
                 item_id=item_id,
                 available=not bool(item.get("available", True)),
             )
-            state_text = "доступна" if updated.get("available") else "скрыта"
+            state_text = "available" if updated.get("available") else "hidden"
             await _show_admin_items_picker(
                 callback.bot,
                 chat_id=callback.message.chat.id,
                 action="toggle",
                 category_index=category_index,
                 preferred_message_id=callback.message.message_id,
-                notice=f"Позиция #{item_id} теперь {state_text}.",
+                notice=f"Item #{item_id} is now {state_text}.",
             )
         elif action == "edit":
             item = await api_client.get_menu_item(item_id=item_id)
             if not item:
-                raise BackendError("Позиция не найдена")
+                raise BackendError("Item not found")
             await state.set_state(AdminStates.waiting_edit_payload)
             await state.update_data(item_id=item_id)
             await _prompt_edit_form(
@@ -1264,7 +1263,7 @@ async def on_admin_item_selected(callback: CallbackQuery, state: FSMContext) -> 
                 preferred_message_id=callback.message.message_id,
             )
         else:
-            await callback.answer("Действие не поддерживается")
+            await callback.answer("Action not supported")
             return
     except BackendError as exc:
         await _show_admin_items_picker(
@@ -1289,7 +1288,7 @@ async def on_admin_cancel_input(callback: CallbackQuery, state: FSMContext) -> N
         chat_id=callback.message.chat.id,
         user_id=callback.from_user.id if callback.from_user else None,
         preferred_message_id=callback.message.message_id,
-        notice="Действие отменено.",
+        notice="Action canceled.",
     )
     await callback.answer()
 
@@ -1302,7 +1301,7 @@ async def on_admin_add_payload(message: Message, state: FSMContext) -> None:
             message.bot,
             chat_id=message.chat.id,
             user_id=message.from_user.id if message.from_user else None,
-            notice="Нет доступа к админ-панели.",
+            notice="No access to the admin panel.",
         )
         return
 
@@ -1333,7 +1332,7 @@ async def on_admin_add_payload(message: Message, state: FSMContext) -> None:
         chat_id=message.chat.id,
         user_id=message.from_user.id if message.from_user else None,
         preferred_message_id=panel_message_ids.get(message.chat.id),
-        notice=f"Добавлено: #{item.get('id')} {item.get('name')}.",
+        notice=f"Added: #{item.get('id')} {item.get('name')}.",
     )
 
 
@@ -1345,7 +1344,7 @@ async def on_admin_edit_payload(message: Message, state: FSMContext) -> None:
             message.bot,
             chat_id=message.chat.id,
             user_id=message.from_user.id if message.from_user else None,
-            notice="Нет доступа к админ-панели.",
+            notice="No access to the admin panel.",
         )
         return
 
@@ -1358,7 +1357,7 @@ async def on_admin_edit_payload(message: Message, state: FSMContext) -> None:
             chat_id=message.chat.id,
             user_id=message.from_user.id if message.from_user else None,
             preferred_message_id=panel_message_ids.get(message.chat.id),
-            notice="Сессия редактирования истекла. Выбери блюдо заново.",
+            notice="Edit session expired. Please choose the item again.",
         )
         return
 
@@ -1367,7 +1366,7 @@ async def on_admin_edit_payload(message: Message, state: FSMContext) -> None:
         name, price, category, description = _parse_admin_payload(text)
         existing = await api_client.get_menu_item(item_id=item_id)
         if not existing:
-            raise BackendError("Позиция не найдена")
+            raise BackendError("Item not found")
         updated = await api_client.update_menu_item(
             item_id=item_id,
             name=name,
@@ -1385,7 +1384,7 @@ async def on_admin_edit_payload(message: Message, state: FSMContext) -> None:
                 chat_id=message.chat.id,
                 user_id=message.from_user.id if message.from_user else None,
                 preferred_message_id=panel_message_ids.get(message.chat.id),
-                notice=f"Ошибка: {exc}",
+                notice=f"Error: {exc}",
             )
             await _safe_delete_user_message(message)
             return
@@ -1407,7 +1406,7 @@ async def on_admin_edit_payload(message: Message, state: FSMContext) -> None:
         chat_id=message.chat.id,
         user_id=message.from_user.id if message.from_user else None,
         preferred_message_id=panel_message_ids.get(message.chat.id),
-        notice=f"Позиция #{updated.get('id')} обновлена.",
+        notice=f"Item #{updated.get('id')} updated.",
     )
 
 
@@ -1419,7 +1418,7 @@ async def on_add_admin_user_payload(message: Message, state: FSMContext) -> None
             message.bot,
             chat_id=message.chat.id,
             user_id=message.from_user.id if message.from_user else None,
-            notice="Нет доступа к управлению администраторами.",
+            notice="No access to admin management.",
         )
         return
 
@@ -1427,20 +1426,20 @@ async def on_add_admin_user_payload(message: Message, state: FSMContext) -> None
     try:
         user_id = _parse_user_id_payload(text)
         if user_id in settings.super_admin_ids:
-            raise ValueError("Этот user_id уже является главным администратором.")
+            raise ValueError("This user_id is already a main admin.")
         await api_client.add_admin_user(user_id=user_id)
         managed_admin_ids.add(user_id)
         await _refresh_admin_cache()
         notified = await _notify_new_admin_access(message.bot, user_id)
         if notified:
             notice = (
-                f"Пользователь {user_id} добавлен в администраторы. "
-                "Уведомление и админ-панель отправлены."
+                f"User {user_id} was added as admin. "
+                "Notification and admin panel were sent."
             )
         else:
             notice = (
-                f"Пользователь {user_id} добавлен в администраторы. "
-                "Не удалось отправить уведомление: пусть пользователь откроет бот и нажмет /start."
+                f"User {user_id} was added as admin. "
+                "Could not send a notification: user should open the bot and press /start."
             )
     except (ValueError, BackendError) as exc:
         await _prompt_add_admin_user_form(
@@ -1470,7 +1469,7 @@ async def on_remove_admin_user_payload(message: Message, state: FSMContext) -> N
             message.bot,
             chat_id=message.chat.id,
             user_id=message.from_user.id if message.from_user else None,
-            notice="Нет доступа к управлению администраторами.",
+            notice="No access to admin management.",
         )
         return
 
@@ -1478,12 +1477,12 @@ async def on_remove_admin_user_payload(message: Message, state: FSMContext) -> N
     try:
         user_id = _parse_user_id_payload(text)
         if user_id in settings.super_admin_ids:
-            raise ValueError("Главного администратора удалить нельзя.")
+            raise ValueError("Main admin cannot be removed.")
         await api_client.remove_admin_user(user_id=user_id)
         managed_admin_ids.discard(user_id)
         pending_admin_notice_ids.discard(user_id)
         await _refresh_admin_cache()
-        notice = f"Пользователь {user_id} удален из администраторов."
+        notice = f"User {user_id} removed from admins."
     except (ValueError, BackendError) as exc:
         await _prompt_remove_admin_user_form(
             message.bot,
@@ -1509,13 +1508,17 @@ async def on_free_text(message: Message, state: FSMContext) -> None:
     if current_state is not None:
         return
 
+    text = (message.text or "").strip()
+    if re.match(r"^/start(?:@\w+)?(?:\s|$)", text, flags=re.IGNORECASE):
+        return
+
     await _safe_delete_user_message(message)
     await _show_home(
         message.bot,
         chat_id=message.chat.id,
         user_id=message.from_user.id if message.from_user else None,
         preferred_message_id=panel_message_ids.get(message.chat.id),
-        notice="Используй кнопки под карточкой, так намного удобнее.",
+        notice="Use the buttons under the card, it is much more convenient.",
     )
 
 
